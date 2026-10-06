@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% from "topbar_macro.html" import topbar_start, topbar_end %}
+{% set editing = link is not none %}
+{% block title %}{{ 'Edit' if editing else 'New' }} link · Beamer{% endblock %}
+
+{% block topbar %}
+{{ topbar_start('Edit link' if editing else 'New link') }}
+  <span class="spacer"></span>
+{{ topbar_end() }}
+{% endblock %}
+
+{% block content %}
+{% set f = form if form else {} %}
+{% set v_title = f.get('title', link.title if editing else '') %}
+{% set v_url = f.get('url', link.url if editing else '') %}
+{% set v_cat = f.get('category', link.category if editing else 'Other') %}
+{% set v_note = f.get('note', (link.note or '') if editing else '') %}
+
+<div class="page-h">
+  <h1>{{ 'Edit link' if editing else 'Add a new link' }}</h1>
+  <p>This link will be visible to the whole team (Team Leader and all members).</p>
+</div>
+<div class="card form-card">
+  <form method="POST" data-once novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <div class="body">
+      <div class="field"><label for="title">Title</label>
+        <input class="input" id="title" name="title" value="{{ v_title }}" maxlength="200" placeholder="e.g. Daily Standup" required autofocus /></div>
+      <div class="field"><label for="url">URL</label>
+        <input class="input" id="url" name="url" value="{{ v_url }}" maxlength="2048" placeholder="https://example.com" inputmode="url" required />
+        <div class="hint">https:// is added automatically if you leave it out.</div></div>
+      <div class="field"><label for="category">Category</label>
+        <select class="input" id="category" name="category">
+          {% for c in categories %}<option value="{{ c }}" {{ 'selected' if v_cat == c }}>{{ c }}</option>{% endfor %}
+        </select></div>
+      <div class="field"><label for="note">Note (optional)</label>
+        <input class="input" id="note" name="note" value="{{ v_note }}" maxlength="300" placeholder="e.g. Every day 10:00 AM" /></div>
+
+    </div>
+    <div class="foot">
+      <a class="btn" href="{{ url_for('index') }}">Cancel</a>
+      <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> {{ 'Save changes' if editing else 'Add link' }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

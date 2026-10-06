@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Login · Beamer{% endblock %}
+{% block body %}
+<button class="icon-btn auth-theme" data-theme-toggle title="Toggle dark / light mode" aria-label="Toggle theme"><i class="bi bi-sun" style="font-size:17px"></i></button>
+<div class="auth">
+  <div class="card auth-card">
+    <div class="auth-brand">
+      <div class="brand-mark"><i class="bi bi-send-fill"></i></div>
+      <h1>Beamer</h1>
+      <p>Sign in with your employee ID to see your team's links.</p>
+    </div>
+    <form method="POST" action="{{ url_for('login') }}" data-once autocomplete="on">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="field">
+        <label for="emp_id">Employee ID</label>
+        <input class="input" id="emp_id" name="emp_id" placeholder="e.g. EMP101" required autofocus autocomplete="username" autocapitalize="characters" spellcheck="false" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="pw-wrap">
+          <input class="input" type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password" />
+          <button type="button" class="icon-btn" data-pw-toggle aria-label="Show password"><i class="bi bi-eye"></i></button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit" style="padding:11px"><i class="bi bi-box-arrow-in-right"></i> Sign in</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

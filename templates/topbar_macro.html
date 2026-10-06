@@ -1,0 +1,9 @@
+{% macro topbar_start(title) %}
+<div class="topbar">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="Menu"><i class="bi bi-list" style="font-size:20px"></i></button>
+  <span class="topbar-title">{{ title }}</span>
+{% endmacro %}
+{% macro topbar_end() %}
+  <button class="icon-btn" data-theme-toggle title="Toggle dark / light mode" aria-label="Toggle theme"><i class="bi bi-sun" style="font-size:16px"></i></button>
+</div>
+{% endmacro %}

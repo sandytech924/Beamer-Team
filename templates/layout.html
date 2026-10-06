@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><i class="bi bi-send-fill"></i></div>
+      <span class="brand-name">Beamer</span>
+      <span class="role-pill">{{ 'Team Leader' if g.user.is_admin else 'Member' }}</span>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">Workspace</div>
+      <a class="nav-item {{ 'active' if page == 'links' and not selected and not only_fav and not by }}" href="{{ url_for('index') }}">
+        <i class="bi bi-grid-1x2"></i> All Links
+        {% if total is defined %}<span class="nav-badge">{{ total }}</span>{% endif %}
+      </a>
+      <a class="nav-item {{ 'active' if by == 'me' }}" href="{{ url_for('index', by='me') }}">
+        <i class="bi bi-person"></i> My Links
+        {% if mine_count is defined %}<span class="nav-badge">{{ mine_count }}</span>{% endif %}
+      </a>
+      <a class="nav-item {{ 'active' if only_fav }}" href="{{ url_for('index', fav=1) }}">
+        <i class="bi bi-star"></i> Favourites
+        {% if fav_count is defined %}<span class="nav-badge">{{ fav_count }}</span>{% endif %}
+      </a>
+      {% if g.user.is_admin %}
+      <a class="nav-item {{ 'active' if page == 'team' }}" href="{{ url_for('team') }}"><i class="bi bi-people"></i> Team</a>
+      {% endif %}
+      <a class="nav-item {{ 'active' if page == 'add' }}" href="{{ url_for('add_link') }}"><i class="bi bi-plus-circle"></i> New Link</a>
+    </div>
+
+    {% if counts is defined %}
+    <div class="sb-section">
+      <div class="sb-label">Categories</div>
+      {% for cat in categories %}
+      <a class="nav-item {{ 'active' if selected == cat }}" href="{{ url_for('index', category=cat) }}">
+        <span class="cat-dot" style="background:{{ CAT_COLORS[cat] }}"></span> {{ cat }}
+        <span class="nav-badge">{{ counts[cat] }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="sb-footer">
+      <div class="user-box">
+        <div class="avatar">{{ g.user.initials }}</div>
+        <div><div class="nm">{{ g.user.name }}</div><div class="id">{{ g.user.emp_id }}</div></div>
+      </div>
+      <a class="btn btn-ghost btn-sm btn-block {{ 'active' if page == 'password' }}" href="{{ url_for('change_password') }}"><i class="bi bi-key"></i> Change password</a>
+      <form method="POST" action="{{ url_for('logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button class="btn btn-sm btn-block" type="submit"><i class="bi bi-box-arrow-right"></i> Log out</button>
+      </form>
+    </div>
+  </aside>
+  <div class="scrim"></div>
+
+  <div class="main">
+    {% block topbar %}{% endblock %}
+    <div class="content">{% block content %}{% endblock %}</div>
+  </div>
+</div>
+
+<dialog id="confirm-dialog">
+  <h3>Are you sure?</h3><p></p>
+  <form method="POST" class="row">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <button type="button" class="btn" data-close>Cancel</button>
+    <button type="submit" class="btn btn-danger">Confirm</button>
+  </form>
+</dialog>
+{% endblock %}

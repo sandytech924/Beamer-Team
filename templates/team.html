@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% from "topbar_macro.html" import topbar_start, topbar_end %}
+{% block title %}Team · Beamer{% endblock %}
+
+{% block topbar %}
+{{ topbar_start('Team') }}
+  <span class="count-chip">{{ members|length }}</span>
+  <span class="spacer"></span>
+{{ topbar_end() }}
+{% endblock %}
+
+{% block content %}
+<div class="team-grid">
+  <div class="card">
+    <div class="sec-h"><i class="bi bi-people"></i> Team members</div>
+    {% for m in members %}
+    <div class="mrow">
+      <div class="avatar">{{ m.initials }}</div>
+      <div class="info"><div class="nm">{{ m.name }}</div><div class="id">{{ m.emp_id }} · {{ link_counts.get(m.id, 0) }} link{{ '' if link_counts.get(m.id, 0) == 1 else 's' }}</div></div>
+      <span class="st {{ 'on' if m.active else 'off' }}">{{ 'Active' if m.active else 'Deactivated' }}</span>
+      <div class="acts">
+        <button class="btn btn-sm" data-edit data-name="{{ m.name }}" data-emp="{{ m.emp_id }}" data-action="{{ url_for('team_edit', uid=m.id) }}"><i class="bi bi-pencil"></i> Edit</button>
+        <button class="btn btn-sm" data-reset data-name="{{ m.name }}" data-action="{{ url_for('team_reset', uid=m.id) }}"><i class="bi bi-key"></i> Reset</button>
+        <button class="btn btn-sm" data-confirm="{{ m.name }} {{ 'will no longer be able to log in.' if m.active else 'will be able to log in again.' }}"
+                data-confirm-title="{{ 'Deactivate' if m.active else 'Activate' }} account?" data-action="{{ url_for('team_toggle', uid=m.id) }}">
+          <i class="bi {{ 'bi-pause-circle' if m.active else 'bi-play-circle' }}"></i> {{ 'Deactivate' if m.active else 'Activate' }}</button>
+        <button class="btn btn-sm btn-danger" data-confirm="{{ m.name }} will be removed from the team. Links added by this member stay visible to everyone."
+                data-confirm-title="Remove member?" data-action="{{ url_for('team_delete', uid=m.id) }}"><i class="bi bi-trash"></i></button>
+      </div>
+    </div>
+    {% else %}
+    <div class="empty" style="padding:40px 20px"><div class="big"><i class="bi bi-person-plus"></i></div><h3>No members yet</h3><p>Add your team using the form.</p></div>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <div class="sec-h"><i class="bi bi-person-plus"></i> Add member</div>
+    <form method="POST" action="{{ url_for('team_add') }}" data-once style="padding:16px">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="field"><label for="n-name">Name</label><input class="input" id="n-name" name="name" required maxlength="100" /></div>
+      <div class="field"><label for="n-emp">Employee ID</label><input class="input" id="n-emp" name="emp_id" required maxlength="30" placeholder="EMP105" autocapitalize="characters" /></div>
+      <div class="field"><label for="n-pw">Password</label>
+        <div class="pw-wrap"><input class="input" type="password" id="n-pw" name="password" required minlength="6" autocomplete="new-password" />
+          <button type="button" class="icon-btn" data-pw-toggle aria-label="Show password"><i class="bi bi-eye"></i></button></div>
+        <div class="hint">Minimum 6 characters. Share it with the member privately.</div></div>
+      <button class="btn btn-primary btn-block" type="submit"><i class="bi bi-plus-lg"></i> Add member</button>
+      <div class="hint">You can add as many team members as you need.</div>
+    </form>
+  </div>
+</div>
+
+<dialog id="edit-dialog">
+  <h3>Edit member</h3><p>Change the name or employee ID.</p>
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <div class="field"><label for="e-name">Name</label><input class="input" id="e-name" name="name" required maxlength="100" /></div>
+    <div class="field"><label for="e-emp">Employee ID</label><input class="input" id="e-emp" name="emp_id" required maxlength="30" autocapitalize="characters" /></div>
+    <div class="row"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+  </form>
+</dialog>
+
+<dialog id="reset-dialog">
+  <h3>Reset password</h3><p>Set a new password for <strong data-name></strong>.</p>
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <div class="field"><input class="input" type="password" name="password" minlength="6" required placeholder="New password" autocomplete="new-password" /></div>
+    <div class="row"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn btn-primary">Update</button></div>
+  </form>
+</dialog>
+{% endblock %}

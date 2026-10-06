@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+{% from "topbar_macro.html" import topbar_start, topbar_end %}
+{% block title %}Links · Beamer{% endblock %}
+
+{% block topbar %}
+{{ topbar_start('Favourites' if only_fav else ('My Links' if by == 'me' else (selected or 'All Links'))) }}
+  <span class="count-chip">{{ links|length }}</span>
+  <form method="GET" action="{{ url_for('index') }}" class="search" style="margin-left:auto">
+    {% if selected %}<input type="hidden" name="category" value="{{ selected }}" />{% endif %}
+    {% if only_fav %}<input type="hidden" name="fav" value="1" />{% endif %}
+    {% if by %}<input type="hidden" name="by" value="{{ by }}" />{% endif %}
+    <i class="bi bi-search"></i>
+    <input class="input" type="search" name="q" id="search-input" placeholder="Search links…" value="{{ q }}" autocomplete="off" />
+  </form>
+  <form method="GET" action="{{ url_for('index') }}" class="filter">
+    {% if selected %}<input type="hidden" name="category" value="{{ selected }}" />{% endif %}
+    {% if only_fav %}<input type="hidden" name="fav" value="1" />{% endif %}
+    {% if q %}<input type="hidden" name="q" value="{{ q }}" />{% endif %}
+    <select class="input" name="by" data-autosubmit aria-label="Filter by member">
+      <option value="">Everyone</option>
+      {% for u in everyone %}<option value="{{ u.id }}" {{ 'selected' if by_id == u.id }}>{{ 'Me' if u.id == g.user.id else u.name }}</option>{% endfor %}
+    </select>
+  </form>
+  <a class="btn btn-primary" href="{{ url_for('add_link') }}"><i class="bi bi-plus-lg"></i><span class="btn-label">New Link</span></a>
+{{ topbar_end() }}
+{% endblock %}
+
+{% block content %}
+{% if stats %}
+<div class="stats">
+  <div class="card stat"><div class="ic"><i class="bi bi-link-45deg"></i></div><div><div class="n">{{ stats.links }}</div><div class="l">Links</div></div></div>
+  <div class="card stat"><div class="ic"><i class="bi bi-people"></i></div><div><div class="n">{{ stats.members }}</div><div class="l">Members</div></div></div>
+  <div class="card stat"><div class="ic"><i class="bi bi-person-check"></i></div><div><div class="n">{{ stats.active }}</div><div class="l">Active</div></div></div>
+</div>
+{% endif %}
+
+{% if links %}
+<div class="grid" {% if only_fav %}data-favs-only{% endif %}>
+  {% for l in links %}
+  {% set color = CAT_COLORS.get(l.category, '#6b7280') %}
+  <article class="card lcard" id="link-{{ l.id }}">
+    <div class="lhead">
+      <div class="lico" style="background:{{ color }}22;color:{{ color }}"><i class="bi {{ CAT_ICONS.get(l.category, 'bi-link-45deg') }}"></i></div>
+      <div class="lbody">
+        <div class="ltitle">{{ l.title }}</div>
+        <a class="lurl" href="{{ l.url }}" target="_blank" rel="noopener noreferrer" title="{{ l.url }}">{{ l.url }}</a>
+      </div>
+    </div>
+    {% if l.note %}<div class="lnote">{{ l.note }}</div>{% endif %}
+    <div class="lmeta">
+      <a class="badge" href="{{ url_for('index', category=l.category) }}" style="background:{{ color }}22;color:{{ color }}">{{ l.category }}</a>
+      <span class="badge share" title="Added by"><i class="bi bi-person"></i>
+        {% if not l.creator %}Removed member{% elif l.created_by == g.user.id %}You{% else %}{{ l.creator.name }}{% endif %}</span>
+      <span>{{ l.created_at.strftime('%d %b %Y') }}</span>
+    </div>
+    <div class="lfoot">
+      <button class="icon-btn" data-copy="{{ l.url }}" title="Copy link" aria-label="Copy link"><i class="bi bi-clipboard"></i></button>
+      <a class="icon-btn" href="{{ l.url }}" target="_blank" rel="noopener noreferrer" title="Open" aria-label="Open"><i class="bi bi-box-arrow-up-right"></i></a>
+      <button class="icon-btn fav-btn {{ 'on' if l.id in fav_ids }}" data-id="{{ l.id }}" title="{{ 'Remove favourite' if l.id in fav_ids else 'Add to favourites' }}" aria-label="Favourite">
+        <i class="bi {{ 'bi-star-fill' if l.id in fav_ids else 'bi-star' }}"></i></button>
+      <span class="spacer"></span>
+      {% if can_edit(l) %}
+      <a class="icon-btn" href="{{ url_for('edit_link', link_id=l.id) }}" title="Edit" aria-label="Edit"><i class="bi bi-pencil"></i></a>
+      <button class="icon-btn" title="Delete" aria-label="Delete"
+              data-confirm="“{{ l.title }}” will be permanently removed for the whole team." data-confirm-title="Delete link?"
+              data-action="{{ url_for('delete_link', link_id=l.id) }}"><i class="bi bi-trash"></i></button>
+      {% endif %}
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">
+  <div class="big"><i class="bi {{ 'bi-star' if only_fav else 'bi-link-45deg' }}"></i></div>
+  <h3>{% if q %}No results for “{{ q }}”{% elif only_fav %}No favourites yet{% else %}No links yet{% endif %}</h3>
+  <p>
+    {% if q or selected or only_fav or by %}Try another search or <a href="{{ url_for('index') }}" style="color:var(--accent-text)">clear filters</a>.
+    {% else %}Add the first link. Everyone in the team will see it.{% endif %}
+  </p>
+  {% if not q and not selected and not only_fav and not by %}
+  <a class="btn btn-primary" href="{{ url_for('add_link') }}"><i class="bi bi-plus-lg"></i> Add link</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

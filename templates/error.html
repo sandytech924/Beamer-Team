@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} · Beamer{% endblock %}
+{% block body %}
+<div class="auth"><div class="card auth-card" style="text-align:center">
+  <h1 style="font-size:42px">{{ code }}</h1>
+  <p style="color:var(--text-2);margin:8px 0 18px">{{ msg }}</p>
+  <a class="btn btn-primary" href="{{ url_for('index') }}">Back to home</a>
+</div></div>
+{% endblock %}
